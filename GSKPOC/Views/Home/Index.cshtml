@@ -1,0 +1,198 @@
+﻿@model GSKPOC.Models.ItemPrice
+@{
+    ViewData["Title"] = "Home Page";
+}
+<style>
+    label{
+        float:left
+    }
+</style>
+
+<div class="text-center">
+    <div class="row">
+        <div class="col-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title">PIP</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="row form-group">
+                            <div class="col-12">
+                                <label>Item :</label>
+                                <select class="form-control" asp-for="ItemId" onchange="setCurrentPrice(this)">
+                                    <option value="0" price="">[--Select--]</option>
+                                    @foreach (var item in (List<Item>)ViewBag.Items)
+                                    {
+                                        <option value="@item.ItemId" price="@item.Price">@item.ItemName</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-12">
+                                <label>Current Price :</label>
+                                <input type="number" readonly asp-for="CurrentPrice" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-12">
+                                <label>New Price :</label>
+                                <input type="number" asp-for="NewPrice" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-12" style="text-align:right">
+                                <button type="button" id="btnSub" onclick="submitFrm();" class="btn btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title">
+                        List of requests
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <td>SNO</td>
+                                        <td>Item</td>
+                                        <td>Current Price</td>
+                                        <td>New Price</td>
+                                        <td>Supervisor</td>
+                                        <td>Admin</td>
+                                        <td></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(ViewBag.Requests != null)
+                                    {
+                                        int a = 0;
+                                        foreach(var item in (List<ItemPrice>)ViewBag.Requests)
+                                        {
+                                    <tr>
+                                        <td>@(a+=1)</td>
+                                        <td>@item.ItemName</td>
+                                        <td>@item.CurrentPrice</td>
+                                        <td>@item.NewPrice</td>
+                                        <td>@item.IsSupervisorApproved</td>
+                                        <td>@item.IsAdminApproved</td>
+                                        <td>
+                                            <a href="@Url.Action("Remove", "Home", new { OrderNo = item.WorkOrderNo })" class="btn btn-danger btn-sm">
+                                                X
+                                            </a>
+                                        </td>
+                                    </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{ 
+    <script type="text/javascript">
+        $(function () {
+            @if(ViewData["error"] != null)
+            {
+                <text>
+                    alert("@ViewData["error"]");
+                </text>
+            }
+            @if(ViewData["success"] != null)
+            {
+                <text>
+                    alert("@ViewData["success"]");
+                </text>
+            }
+        });
+
+        function setCurrentPrice(s) {
+            var price = $(s).find(":selected").attr("price");
+            $("#CurrentPrice").val(price);
+        }
+
+        function validate() {
+            var item = $("#ItemId").val();
+            var curPrice = $("#CurrentPrice").val();
+            var newPrice = $("#NewPrice").val();
+
+            if (item == "") {
+                return false;
+            }
+
+            if (curPrice == "") {
+                return false;
+            }
+
+            if (newPrice == "") {
+                return false;
+            }
+
+            return true;
+        }
+
+        function updaterecord(item) {
+            var req = new XMLHttpRequest();
+            var url = "https://prod-11.centralindia.logic.azure.com:443/workflows/cb068a158fb54f08a0c608c140c0984d/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=LPpkc-jKNfjmLgj2GBI6BhBHC1qsI6bFIvqbGljKWWc";
+            var value = '{"Item": "' + item + '"}';
+            console.log(value);
+            req.open("POST", url, true);
+            req.setRequestHeader('Content-Type', 'application/json');
+            req.send(value);
+            window.location.href = "@Url.Action("Index", "Home")";
+        }
+
+        function submitFrm() {
+            if (validate()) {
+                var item = $("#ItemId").val();
+                var curPrice = $("#CurrentPrice").val();
+                var newPrice = $("#NewPrice").val();
+
+                var obj = {
+                    ItemId: parseInt(item),
+                    CurrentPrice: parseFloat(curPrice),
+                    NewPrice: parseFloat(newPrice)
+                }
+
+                var frmData = new FormData();
+                frmData.append("sRecord", JSON.stringify(obj));
+                $.ajax({
+                    url: "@Url.Action("SubmitRequest", "Home")",
+                    type: "POST",
+                    data: frmData,
+                    contentType: false,
+                    processData: false,
+                    success: function (res) {
+                        console.log(res);
+                        if (res.item1 == true) {
+                            //alert("Saved");
+                            var worderId = res.item2;
+                            updaterecord(worderId);
+                            ///window.location.href = "@Url.Action("Index", "Home")";
+                        } else {
+                            alert(res.item2);
+                        }
+                    },
+                    error: function () {
+
+                    }
+                });
+            }
+        }
+    </script>
+}
