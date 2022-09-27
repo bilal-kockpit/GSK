@@ -74,24 +74,24 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @if(ViewBag.Requests != null)
+                                    @if (ViewBag.Requests != null)
                                     {
                                         int a = 0;
-                                        foreach(var item in (List<ItemPrice>)ViewBag.Requests)
+                                        foreach (var item in (List<ItemPrice>)ViewBag.Requests)
                                         {
-                                    <tr>
-                                        <td>@(a+=1)</td>
-                                        <td>@item.ItemName</td>
-                                        <td>@item.CurrentPrice</td>
-                                        <td>@item.NewPrice</td>
-                                        <td>@item.IsSupervisorApproved</td>
-                                        <td>@item.IsAdminApproved</td>
-                                        <td>
-                                            <a href="@Url.Action("Remove", "Home", new { OrderNo = item.WorkOrderNo })" class="btn btn-danger btn-sm">
-                                                X
-                                            </a>
-                                        </td>
-                                    </tr>
+                                            <tr>
+                                                <td>@(a+=1)</td>
+                                                <td>@item.ItemName</td>
+                                                <td>@item.CurrentPrice</td>
+                                                <td>@item.NewPrice</td>
+                                                <td>@item.IsSupervisorApproved</td>
+                                                <td>@item.IsAdminApproved</td>
+                                                <td>
+                                                    <a href="@Url.Action("Remove", "Home", new { OrderNo = item.WorkOrderNo })" class="btn btn-danger btn-sm">
+                                                        X
+                                                    </a>
+                                                </td>
+                                            </tr>
                                         }
                                     }
                                 </tbody>
@@ -99,6 +99,14 @@
                         </div>
                     </div>
                 </div>
+                <div class="row form-group">
+                    <div class="col-12" style="text-align:center">
+                        <a href="@Url.Action("Index", "Home",null)" class="btn btn-primary">
+                            Refersh
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -154,7 +162,8 @@
             req.open("POST", url, true);
             req.setRequestHeader('Content-Type', 'application/json');
             req.send(value);
-            window.location.href = "@Url.Action("Index", "Home")";
+            alert("Saved");
+            @*window.location.href = "@Url.Action("Index", "Home")";*@
         }
 
         function submitFrm() {
