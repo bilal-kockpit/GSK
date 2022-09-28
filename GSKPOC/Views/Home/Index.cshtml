@@ -161,8 +161,7 @@
             console.log(value);
             req.open("POST", url, true);
             req.setRequestHeader('Content-Type', 'application/json');
-            req.send(value);
-            alert("Saved");
+            req.send(value);          
             @*window.location.href = "@Url.Action("Index", "Home")";*@
         }
 
