@@ -1,4 +1,5 @@
-﻿using GSKPOC.Models;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using GSKPOC.Models;
 using GSKPOC.ORM;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -16,15 +17,17 @@ namespace GSKPOC.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly INotyfService _notyf;
         Data oData;
         DataSet LocalDS = new DataSet();
         string sConn = string.Empty;
         IConfiguration _conf;
 
-        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
+        public HomeController(ILogger<HomeController> logger, INotyfService notyf, IConfiguration configuration)
         {
             this._conf = configuration;
             _logger = logger;
+            _notyf = notyf;
             sConn = this._conf["ConnectionString"].ToString().Trim();
             oData = new Data(sConn, LocalDS);
         }
@@ -60,6 +63,7 @@ namespace GSKPOC.Controllers
                     lretval = true;
                     msg = this.LocalDS.Tables["tItemPrice"].Rows[0][0].ToString().Trim();
                 }
+                _notyf.Success("Record added successfully");
             }
             catch (Exception ex)
             {
